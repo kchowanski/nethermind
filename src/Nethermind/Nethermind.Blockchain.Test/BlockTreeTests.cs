@@ -486,7 +486,7 @@ namespace Nethermind.Blockchain.Test
 
             MemDb blocksDb = new MemDb();
             MemDb headersDb = new MemDb();
-            blocksDb.Set(genesisBlock.Hash, Rlp.Encode(genesisBlock).Bytes);
+            blocksDb.Set(genesisBlock.Hash, Rlp.Encode(genesisBlock.Body).Bytes);
             headersDb.Set(genesisBlock.Hash, Rlp.Encode(genesisBlock.Header).Bytes);
 
             MemDb blockInfosDb = new MemDb();
@@ -510,7 +510,7 @@ namespace Nethermind.Blockchain.Test
 
             MemDb blocksDb = new MemDb();
             MemDb headersDb = new MemDb();
-            blocksDb.Set(genesisBlock.Hash, Rlp.Encode(genesisBlock).Bytes);
+            blocksDb.Set(genesisBlock.Hash, Rlp.Encode(genesisBlock.Body).Bytes);
             headersDb.Set(genesisBlock.Hash, Rlp.Encode(genesisBlock.Header).Bytes);
 
             MemDb blockInfosDb = new MemDb();
@@ -540,7 +540,8 @@ namespace Nethermind.Blockchain.Test
                 for (int i = 0; i < testTree.Head.Number + 1; i++)
                 {
                     Block ithBlock = testTree.FindBlock(i);
-                    blocksDb.Set(ithBlock.Hash, Rlp.Encode(ithBlock).Bytes);
+                    headersDb.Set(ithBlock.Hash, Rlp.Encode(ithBlock.Header).Bytes);
+                    blocksDb.Set(ithBlock.Hash, Rlp.Encode(ithBlock.Body).Bytes);
 
                     ChainLevelInfo ithLevel = new ChainLevelInfo(true, new BlockInfo[1] {new BlockInfo(ithBlock.Hash, ithBlock.TotalDifficulty.Value)});
                     blockInfosDb.Set(i, Rlp.Encode(ithLevel).Bytes);
@@ -570,7 +571,8 @@ namespace Nethermind.Blockchain.Test
                 for (int i = 0; i < testTree.Head.Number + 1; i++)
                 {
                     Block ithBlock = testTree.FindBlock(i);
-                    blocksDb.Set(ithBlock.Hash, Rlp.Encode(ithBlock).Bytes);
+                    headersDb.Set(ithBlock.Hash, Rlp.Encode(ithBlock.Header).Bytes);
+                    blocksDb.Set(ithBlock.Hash, Rlp.Encode(ithBlock.Body).Bytes);
 
                     ChainLevelInfo ithLevel = new ChainLevelInfo(true, new BlockInfo[1] {new BlockInfo(ithBlock.Hash, ithBlock.TotalDifficulty.Value)});
                     blockInfosDb.Set(i, Rlp.Encode(ithLevel).Bytes);

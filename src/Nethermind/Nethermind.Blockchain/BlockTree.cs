@@ -71,7 +71,8 @@ namespace Nethermind.Blockchain
         private readonly IDb _headerDb;
 
         private ConcurrentDictionary<long, HashSet<Keccak>> _invalidBlocks = new ConcurrentDictionary<long, HashSet<Keccak>>();
-        private readonly BlockDecoder _blockDecoder = new BlockDecoder();
+        
+        private readonly BodyDecoder _bodyDecoder = new BodyDecoder();
         private readonly HeaderDecoder _headerDecoder = new HeaderDecoder();
         private readonly IDb _blockInfoDb;
         private readonly ILogger _logger;
@@ -449,7 +450,7 @@ namespace Nethermind.Blockchain
 
             using (MemoryStream stream = Rlp.BorrowStream())
             {
-                Rlp.Encode(stream, block);
+                Rlp.Encode(stream, block.Body);
                 byte[] newRlp = stream.ToArray();
 
                 _blockDb.Set(block.Hash, newRlp);
@@ -541,7 +542,7 @@ namespace Nethermind.Blockchain
             {
                 using (MemoryStream stream = Rlp.BorrowStream())
                 {
-                    Rlp.Encode(stream, block);
+                    Rlp.Encode(stream, block.Body);
                     byte[] newRlp = stream.ToArray();
                     _blockDb.Set(block.Hash, newRlp);
                 }
@@ -1257,13 +1258,21 @@ namespace Nethermind.Blockchain
             Block block = _blockCache.Get(blockHash);
             if (block == null)
             {
-                byte[] data = _blockDb.Get(blockHash);
-                if (data == null)
+                byte[] headerData = _headerDb.Get(blockHash);
+                if (headerData == null)
+                {
+                    return null;
+                }
+                
+                byte[] bodyData = _blockDb.Get(blockHash);
+                if (bodyData == null)
                 {
                     return null;
                 }
 
-                block = _blockDecoder.Decode(data.AsRlpContext(), RlpBehaviors.AllowExtraData);
+                BlockBody body = _bodyDecoder.Decode(bodyData.AsRlpContext(), RlpBehaviors.AllowExtraData);
+                BlockHeader header = _headerDecoder.Decode(headerData.AsRlpContext(), RlpBehaviors.AllowExtraData);
+                block = new Block(header, body); 
             }
 
             bool totalDifficultyNeeded = (options & BlockTreeLookupOptions.TotalDifficultyNotNeeded) == BlockTreeLookupOptions.None;
